@@ -34,7 +34,7 @@ app.post("/search", async (req, res) => {
     const { lat, lon } = result[0];
 
     const getWeatherData = await fetch(
-      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=sunrise,temperature_2m_max,temperature_2m_min,sunset,uv_index_max,precipitation_sum,precipitation_probability_max,wind_speed_10m_max&current=temperature_2m,precipitation,relative_humidity_2m&timezone=Asia%2FSingapore`,
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=sunrise,temperature_2m_max,temperature_2m_min,sunset,uv_index_max,precipitation_sum,precipitation_probability_max,wind_speed_10m_max&current=temperature_2m,precipitation,relative_humidity_2m&timezone=auto`,
     );
 
     const parseWeatherData = await getWeatherData.json();

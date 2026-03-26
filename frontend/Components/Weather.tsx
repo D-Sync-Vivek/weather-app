@@ -5,7 +5,9 @@ import { useState } from 'react'
 
 const Weather = () => {
     const [location, setLocation] = useState("Delhi");
-    
+    const [currTemp, setCurrTemp] = useState<number | null>(null)
+    const [precipitation, setPrecipitation] = useState<number | null>(null)
+    const [relativeHumidity, setRelativeHumidity] = useState<number | null>(null)
 
     const handleSubmit = async () => {
         try {
@@ -19,6 +21,12 @@ const Weather = () => {
 
             const res = await response.json();
             console.log(res.data);
+            const current = res.data.current;
+            const currTime = current.time;
+
+            setCurrTemp(current.temperature_2m)
+            setPrecipitation(current.precipitation)
+            setRelativeHumidity(current.relative_humidity_2m)
 
 
         } catch (err) {
@@ -47,16 +55,16 @@ const Weather = () => {
                     <h1 className='text-2xl'>Temparature</h1>
                     <div>
                         <p>Min Temparature: </p>
-                        <p>Curr Temparature:</p>
+                        <p>Curr Temparature: {currTemp}</p>
                         <p>Max Temparature:</p>
                     </div>
                 </span>
 
                 <span>
                     <h1 className='text-2xl'>Atmospheric Conditions</h1>
-                    <p>Precipitation: </p>
-                    <p>Relative Humidity:</p>
-                    <p>UV Index: </p>
+                    <p>Precipitation: {precipitation}</p>
+                    <p>Relative Humidity: {relativeHumidity}</p>
+                    <p>UV Index: {}</p>
                 </span>
 
                 <span>
