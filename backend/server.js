@@ -82,3 +82,7 @@ app.post("/search", async (req, res) => {
         res.status(500).json({ message: "Internal Server Error during fetching" });
     }
 });
+
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
