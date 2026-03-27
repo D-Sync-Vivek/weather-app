@@ -13,6 +13,10 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+app.get('/', (req, res) => {
+    res.send("Get request");
+})
+
 app.post("/search", async (req, res) => {
     const { lat, lon, startDate, endDate } = req.body;
     
