@@ -5,7 +5,12 @@ import "dotenv/config";
 const app = express();
 const PORT = 5000;
 
-app.use(cors());
+const corsOptions = {
+  origin: 'https://weatherapp-byvivek.vercel.app',
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.post("/search", async (req, res) => {
@@ -72,9 +77,4 @@ app.post("/search", async (req, res) => {
         console.error("Server Fetch Error:", err);
         res.status(500).json({ message: "Internal Server Error during fetching" });
     }
-});
-
-app.listen(PORT, "0.0.0.0", () => {
-    console.log(`✅ Backend running on http://localhost:${PORT}`);
-    console.log(`🚀 Ready to handle ${new Date().getFullYear()} Weather Data`);
 });

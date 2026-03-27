@@ -65,7 +65,8 @@ export default function Weather({ location }: Props) {
       }
     }
     try {
-      const res = await fetch("/api/search", {
+      const API_URL = import.meta.env.VITE_API_URL;
+      const res = await fetch(`${API_URL}/search`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

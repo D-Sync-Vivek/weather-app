@@ -29,7 +29,7 @@ export const WeatherChart = ({
   <div className="w-full bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700">
     <h3 className="text-lg font-semibold mb-4 text-slate-300 ml-4">{title}</h3>
     <div className="w-full overflow-x-auto">
-      <div className="min-w-[900px]">
+      <div className="min-w-225">
         <LineChart width={900} height={320} data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
           <XAxis dataKey={xKey} stroke="#94a3b8" fontSize={12} />
