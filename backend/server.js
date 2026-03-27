@@ -3,50 +3,78 @@ import cors from "cors";
 import "dotenv/config";
 
 const app = express();
-const port = 5000;
-const weatherApi = process.env.OPEN_WEATHER_API;
+const PORT = 5000;
 
 app.use(cors());
 app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.status(200).json({
-    message: "success",
-  });
-});
-
 app.post("/search", async (req, res) => {
-  const body = await req.body;
-  const { location } = body;
+    const { lat, lon, startDate, endDate } = req.body;
+    
+    // Fallback: If no end date, use start date (Page 1)
+    const end = endDate || startDate;
 
-  if (typeof location != "string" || !location) {
-    return res.json({
-      message: "Incorrect Location",
-    });
-  }
+    // 1. Date Logic
+    // Today at midnight for comparison
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const start = new Date(startDate);
 
-  try {
-    const geoCode = await fetch(
-      `http://api.openweathermap.org/geo/1.0/direct?q=${location}&limit=1&appid=${weatherApi}`,
-    );
+    // If the date is before today, use the Archive API
+    const isHistorical = start < today;
+    
+    const baseUrl = isHistorical 
+        ? "https://archive-api.open-meteo.com/v1/archive" 
+        : "https://api.open-meteo.com/v1/forecast";
 
-    const result = await geoCode.json();
-    const { lat, lon } = result[0];
+    try {
+        // 2. Weather Params 
+        const params = new URLSearchParams({
+            latitude: lat,
+            longitude: lon,
+            start_date: startDate,
+            end_date: end,
+            timezone: "auto",
+            current: "temperature_2m,precipitation,relative_humidity_2m,wind_speed_10m,wind_direction_10m,weather_code",
+            hourly: "temperature_2m,relative_humidity_2m,precipitation,visibility,wind_speed_10m,uv_index",
+            daily: "sunrise,sunset,temperature_2m_max,temperature_2m_min,temperature_2m_mean,uv_index_max,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,wind_direction_10m_dominant"
+        });
 
-    const getWeatherData = await fetch(
-      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=sunrise,temperature_2m_max,temperature_2m_min,sunset,uv_index_max,precipitation_sum,precipitation_probability_max,wind_speed_10m_max&current=temperature_2m,precipitation,relative_humidity_2m&timezone=auto`,
-    );
+        // 3. Air Quality Params
+        const aqiParams = new URLSearchParams({
+            latitude: lat,
+            longitude: lon,
+            start_date: startDate,
+            end_date: end,
+            timezone: "auto",
+            hourly: "pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,european_aqi",
+            current: "pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,european_aqi"
+        });
 
-    const parseWeatherData = await getWeatherData.json();
-    res.json({
-      message: "success",
-      data: parseWeatherData,
-    });
-  } catch (err) {
-    console.error(err);
-  }
+        // 4. Simultaneous Fetching
+        const [wRes, aRes] = await Promise.all([
+            fetch(`${baseUrl}?${params.toString()}`),
+            fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?${aqiParams.toString()}`)
+        ]);
+
+        const weather = await wRes.json();
+        const aqi = await aRes.json();
+
+        // Check for Open-Meteo specific errors (e.g., date out of range)
+        if (weather.error) {
+            console.error("Open-Meteo Error:", weather.reason);
+            return res.status(400).json({ message: weather.reason });
+        }
+
+        res.json({ data: weather, aqi: aqi });
+
+    } catch (err) {
+        console.error("Server Fetch Error:", err);
+        res.status(500).json({ message: "Internal Server Error during fetching" });
+    }
 });
 
-app.listen(port, () => {
-  console.log(`backend running on ${port}`);
+app.listen(PORT, "0.0.0.0", () => {
+    console.log(`✅ Backend running on http://localhost:${PORT}`);
+    console.log(`🚀 Ready to handle ${new Date().getFullYear()} Weather Data`);
 });

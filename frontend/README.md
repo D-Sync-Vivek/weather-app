@@ -1,73 +1,47 @@
-# React + TypeScript + Vite
+# Weather Dashboard (Open‑Meteo)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Responsive React + Vite app that uses browser GPS to show:
 
-Currently, two official plugins are available:
+- **Page 1** (`/`): current weather + hourly charts (temperature toggle °C/°F, humidity, precipitation, visibility, wind, PM10/PM2.5).
+- **Page 2** (`/historical`): historical trends for a selectable date range (max **2 years**).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Data is fetched via a small Express backend that calls:
 
-## React Compiler
+- Open‑Meteo Forecast/Archive APIs
+- Open‑Meteo Air Quality API
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech
 
-## Expanding the ESLint configuration
+- **Frontend**: React, TypeScript, Tailwind, Recharts, React Router
+- **Backend**: Express (single endpoint: `POST /search`)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Run locally
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Backend
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd backend
+npm install
+node server.js
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Backend runs on `http://localhost:5000`.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Frontend
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd frontend
+npm install
+npm run dev
 ```
+
+Frontend runs on `http://localhost:5173`.
+
+Notes:
+
+- The frontend uses a Vite dev proxy, so it calls the backend as **`/api/search`**.
+- If GPS permission is denied, the app falls back to **Ghaziabad, India** coordinates.
+
+## Known limitations
+
+- **CO₂** is **not** provided by Open‑Meteo’s air-quality API. The UI shows a clearly labeled **global-average placeholder (~420 ppm)**.
